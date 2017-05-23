@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+(c) L3i - Univ. La Rochelle
+    joseph.chazalon (at) univ-lr (dot) fr
+
+SmartDoc 2017 Sample Method
+
+Tracking tools.
+"""
 
 # ==============================================================================
 # Imports
@@ -11,6 +19,9 @@ from Tracker import *
 
 # ==============================================================================
 class AbstractPOITracker(Tracker):
+    '''
+    Abstract class for object tracking using keypoints and local descriptors.
+    '''
     def __init__(self, detector, matcher,
                  num_pyrdown_model=0,
                  num_pyrdown_frames=0,

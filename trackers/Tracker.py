@@ -1,5 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+(c) L3i - Univ. La Rochelle
+    joseph.chazalon (at) univ-lr (dot) fr
+
+SmartDoc 2017 Sample Method
+
+Tracking tools.
+"""
 
 # ==============================================================================
 # Imports
@@ -20,6 +30,16 @@ def multiPyrDown(img, num_pyrdown=1):
 class Tracker(object):
     """
     Object tracking API + a few utility methods.
+
+    You need to run the following actions in this order:
+
+    1. create an instance of a concrete subclass of `Tracker`
+    2. configure the size of the frames with `reinitFrameSize()`
+    3. configure the model image frames will be matched against using
+       `reconfigureModel()`
+    4. For every frame, call `processFrame()` to get the coordinated of the
+       object (the model) inside the frame. If the object cannot be found,
+       the `rejected` boolean is set to `False`.
     """
     # Interface
     # --------------------------------------------------------------------------

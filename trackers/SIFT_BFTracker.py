@@ -1,5 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+(c) L3i - Univ. La Rochelle
+    joseph.chazalon (at) univ-lr (dot) fr
+
+SmartDoc 2017 Sample Method
+
+Tracking tools.
+"""
 
 # ==============================================================================
 # Imports

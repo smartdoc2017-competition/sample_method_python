@@ -27,12 +27,19 @@ _Point = namedtuple("Point", ["x", "y"])
 
 # ==============================================================================
 class VideoCapture(object):
+    '''
+    Example processing class to produce a restored image given some video input.
+    '''
     def __init__(self, debug=False, activate_gui=False):
         self._debug = debug
         self._logger = createAndInitLogger(__name__, debug)
         self._gui = activate_gui
 
     def _read_task_data(self, filename):
+        '''
+        Reads the `task_data.json` file and returns a tuple with
+        all values.
+        '''
         tmp = None
         with open(filename, "rb") as infile:
             tmp = json.load(infile)
@@ -82,7 +89,16 @@ class VideoCapture(object):
 
     def process_video(self, task_data_path, video_path, 
                       reference_frame_path, output_path):
-        # define windows names for gui
+        '''
+        This is the main function which processes a video capture and
+        produces a restored image.
+        In this example the video is processed in a single pass (in order
+        to comply with what a real mobile application would probably
+        have to do) and the blending is very naive.
+        Perspective transform is estimated using keypoint matching
+        with SIFT descriptors.
+        '''
+        # define windows names for GUI
         win_result = "Result Image"
         win_video = "Video Input"
         win_ref_frame = "Reference Frame"
@@ -152,6 +168,9 @@ class VideoCapture(object):
         self._show_image(win_result, result_image)
 
         # (naive) create a simple SIFT tracker to project frames
+        # Note: There may be better techniques to estimate the relative position
+        # between the camera and the document, or the position between the 
+        # reference frame and the current frame.
         logger.debug("Creating tracker.")
         tracker = SIFT_BFTracker(debug=self._debug)
         logger.debug("Reinitializing tracker with frame size (w=%.3f; h=%.3f)" 
@@ -161,21 +180,26 @@ class VideoCapture(object):
         tracker.reconfigureModel(result_image)
         logger.debug("Tracker configuration complete.")
 
-        # (naive) iterate over video frames
-        while vcap_is_ok:
+        # iterate over video frames
+        while True:
             vcap_is_ok, current_frame = videocap.read()
+            if not vcap_is_ok:
+                logger.debug("End of stream reached after frame %d" % current_frame_index)
+                # end of stream reached
+                break
             current_frame_index += 1
             current_frame_orig = current_frame.copy()
 
             # find the object
             (rejected, tl, bl, br, tr) = tracker.processFrame(current_frame_orig)
             if not rejected:
-                logger.info("frame: A tl:(%-4.2f,%-4.2f) bl:(%-4.2f,%-4.2f) "
+                logger.info("frame %03d: A tl:(%-4.2f,%-4.2f) bl:(%-4.2f,%-4.2f) "
                                      "br:(%-4.2f,%-4.2f) tr:(%-4.2f,%-4.2f)" 
-                            %(tl[0], tl[1], bl[0], bl[1], br[0], br[1], tr[0], tr[1]))
+                            %(current_frame_index, 
+                                tl[0], tl[1], bl[0], bl[1], br[0], br[1], tr[0], tr[1]))
                 self._overlay_poly(current_frame, [tl, bl, br, tr])
             else:
-                logger.info("frame: R")
+                logger.info("frame %03d: R" % current_frame_index)
                 if self._gui:
                     cv2.circle(current_frame, (frame_shape.x_len/2, frame_shape.y_len/2), 
                         20, (0, 0, 255), 10)
@@ -204,11 +228,28 @@ class VideoCapture(object):
                     current_frame_orig, 
                     trans, 
                     (result_image.shape[1],result_image.shape[0]))
-                np.copyto(result_image, pre_result, where=(mask>0))
+                # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                # NOTE: changing the following line might be the easiest
+                # way to improve this naive implementation. Here we
+                # merely copy the content of the current frame over the
+                # result image, overwriting previous pixel without any
+                # weighting, discarding, color correction, perspective 
+                # adjustment, border fading, etc.
+                # There are, of course, many other possible improvements
+                # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                np.copyto(result_image, pre_result, where=(mask>0)) # !!!!!!!!!!
+                # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             self._show_image(win_result, result_image)
 
         # write output
+        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        # NOTE: you may want to improve the contrast of the image here, as
+        # it will be compared against an image generated from the digital 
+        # source. Beware of not introducing noise at it will penalize your 
+        # results.
+        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         cv2.imwrite(output_path, result_image)
+        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         logger.debug("Wrote result image to '%s'." % output_path)
         
         logger.info("Process complete.")
@@ -222,5 +263,5 @@ class VideoCapture(object):
             while not should_quit:
                 key_code = cv2.waitKey(100) & 0xff
                 should_quit = key_code in exit_keys
-        logger.debug("Videocapture end.")
+        logger.debug("VideoCapture end.")
     # / VideoCapture.process_video()
