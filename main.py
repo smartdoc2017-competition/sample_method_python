@@ -27,7 +27,7 @@ from processing.VideoCapture import VideoCapture
 
 # ==============================================================================
 # Constants
-PROG_VERSION = "1.0"
+PROG_VERSION = "1.1"
 PROG_NAME = "SD17-example"
 PROG_DESCRIPTION = "SmartDoc 2017 Sample Method - command line interface"
 EXITCODE_OK = 0
