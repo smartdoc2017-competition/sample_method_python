@@ -91,7 +91,7 @@ class Application(object):
             self._logger.info("Process interrupted by user.")
             return EXITCODE_KBDBREAK
         except IOError:
-            self._logger.info("Problem in reading or writing file.")
+            self._logger.exception("Problem in reading or writing file.")
             return EXITCODE_IOERROR
         except:
             self._logger.exception("Unknown error.")
