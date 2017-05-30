@@ -217,9 +217,7 @@ class VideoCapture(object):
                 mask = np.zeros(result_image.shape, dtype=np.uint8)
                 result_roi = cv2.perspectiveTransform(
                     frame_poly.reshape(1, -1, 2), 
-                    trans, 
-                    (target_image_shape.y_len,target_image_shape.x_len)
-                    ).reshape(-1, 2)
+                    trans).reshape(-1, 2)
                 result_roi = np.int32(result_roi)
                 white = (255,255,255) 
                 cv2.fillPoly(mask, [result_roi], white)
